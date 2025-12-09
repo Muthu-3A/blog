@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>FergBlog</title>
+        <link rel="stylesheet" href="/style.css">
+    </head>
+    <body>
+        <h1>My Blog</h1>
+
+        <div class="post-list">
+            <% posts.forEach(post => { %>
+                <div class="post-card">
+                    <h2><a href="/post/<%= post.id %>"><%= post.title %></a></h2>
+                    <p><%= post.date %></p>
+                    <p><%= post.content.substring(0, 80) %>...</p>
+                </div>
+            <% }) %>
+        </div>
+    </body>
+</html>
