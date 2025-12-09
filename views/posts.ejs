@@ -3,17 +3,25 @@
     <head>
         <title><%= post.title %></title>
         <link rel="stylesheet" href="/style.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     </head>
 
     <body>
-        <a href="/"><- Back to Blog</a>
+        <header class="navbar navbar-with-icon">
+            <a href="/" class="navbar-icon"><i class="fa-solid fa-house"></i></a>
+            <h1>Ferguson's Blog</h1>
+        </header>
+        <div class="site">
+            <!--- <a href="/">&larr; Back to Blog</a> --->
 
-        <h1><%= post.title %></h1>
-        <p><em><%= post.date %></em></p>
+            <h1 style="margin-top: 0;"><%= post.title %></h1>
+            <p><em><%= post.date %></em></p>
 
-        <article>
-            <p><%= post.content %></p>
-        </article>
-        
+            <article>
+                <%- post.content %>
+            </article>
+
+        </div>
+
     </body>
 </html>
