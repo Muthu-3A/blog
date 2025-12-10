@@ -94,3 +94,10 @@ a {
 .description {
     color: #333;
 }
+
+.markdown-body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem auto;
+}
