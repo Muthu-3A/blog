@@ -7,7 +7,7 @@ description: "Improvements to our previous model"
 # Further Developments
 Let's continue! We will begin with some basic input validation
 
-![](/grading-model-2/1.png)
+![](/public/grading-model-2/1.png)
 
 For our baseline cubic adjustment y=ax^3+bx, we require:
 
@@ -15,7 +15,7 @@ b >= 0. This is strictly necessary since, regardless of the value assigned to a,
 
 Heuristically a > 0 for similar reasons. Technically this is not entirely true since if we use a prior scaling parameter to restrict our relevant domain to within the local extremum we have a valid function. This is duly noted (for now) as we currently need less complexity not more!
 
-![](/grading-model-2/2.png)
+![](/public/grading-model-2/2.png)
 
 We now move on to alerting users of dubious parameter combinations. Remembering back to DB 4, we can efficiently "raise the alarm" if a substantial proportion of our outputs are rounded to either extremity.
 

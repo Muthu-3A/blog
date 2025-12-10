@@ -57,7 +57,7 @@ I decided that a model with a cubic and linear term was the best among my option
 
 y = ax^3 + bx    where a and b are real scalars > 0
 
-![](/public/grading-model/1.png)
+![](../../public/grading-model/1.png)
 
 It was reaffirming to see that this approach produced what I thought to be a desirable output.
 

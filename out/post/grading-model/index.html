@@ -46,12 +46,12 @@
 <p><strong>(i)</strong></p>
 <p>I decided that a model with a cubic and linear term was the best among my options. We could include two adjustment parameters a,b &gt; 0 resulting in a (1) positively increasing function, (2) centered around the origin (3) with a parabolic derivative achieving our desired effect of decreasing change in grade closer to expected performance (at the origin).</p>
 <p>y = ax^3 + bx    where a and b are real scalars &gt; 0</p>
-<p><img src="/grading-model/1.png" alt=""></p>
-<p>It was reaffirming to see that this approach produced what I thought to be a desirable output</p>
+<p><img src="../../public/grading-model/1.png" alt=""></p>
+<p>It was reaffirming to see that this approach produced what I thought to be a desirable output.</p>
 <p><strong>(ii)</strong></p>
 <p>At this point in time, our adjustment uses only the individual adjustment vector. It does not take into account our input/output [0,100] team grade interval.</p>
 <figure>
-  <img src="/grading-model/2.png">
+  <img src="/public/grading-model/2.png">
   <figcaption>Our function doesn't yet consider team grade</figcaption>
 </figure>
 
@@ -64,7 +64,7 @@
 <p>Let us consider the interval value for the shorter side. It&#39;s length will simply be from the grade value itself to it&#39;s closest extreme. For team grade values greater than 50 this is the value &#39;100-team_grade&#39; and for team grade values less than 50 this is the value &#39;team_grade&#39;. The longer side is the opposite of the previous assignment. 
 Thus our mapping of adjustments from our rating vector is now consistent between various input team grades.</p>
 <figure>
-  <img src="/grading-model/3.png">
+  <img src="/public/grading-model/3.png">
   <figcaption>Spacing is proportionally consistent among different inputs</figcaption>
 </figure>
 
@@ -85,7 +85,7 @@ Thus our mapping of adjustments from our rating vector is now consistent between
 <p>After informing superiors that an adjusted problem specification would yield better results, we use the only information we can. We incorporate a ratio between the observed sum of the individual ratings and the expected sum of individual ratings. From KA 1 this is 3 times the number of teammates. (Integrating some sort of prior/posterior probability or reputation system into this aspect of the model among a sequence of gradings would be so much fun!).</p>
 <p>We sequence this non-genuine rating adjustment after our prior adjustments as we want to scale along the curve we have already worked out.</p>
 <figure>
-  <img src="/grading-model/4.png">
+  <img src="/public/grading-model/4.png">
   <figcaption>The first team is negative so has stronger scaling. The second team is a baseline. The third team is positive so have weaker scaling.</figcaption>
 </figure>
 
