@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Designing and Implementing a Simple Mathematical Model</title>
+        <link rel="stylesheet" href="/style.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    </head>
+
+    <body>
+        <header class="navbar navbar-with-icon">
+            <a href="/" class="navbar-icon"><i class="fa-solid fa-house"></i></a>
+            <h1>Ferguson's Blog</h1>
+        </header>
+        
+        <div class="site markdown-body">
+            <!--- <a href="/">&larr; Back to Blog</a> --->
+
+            <h1 style="margin-top: 0;">Designing and Implementing a Simple Mathematical Model</h1>
+            <p><em>August 2025</em></p>
+
+            <article>
+                <h1>Problem Specification</h1>
+<p>It is of interest to factor individual contributions into overall team score.</p>
+<h3>Input:</h3>
+<p>Team grade. Single numeric in [0,100]. Given by those outside the team.</p>
+<p>Individual rating vector. Numeric in [1,5]. Each element represents the average rating given to an individual by the other members in the team.</p>
+<h3>Output:</h3>
+<p>Final grade vector. Numeric in [0,100]</p>
+<h3>Function:</h3>
+<p>It is helpful to think of calculate.grades as first producing an adjustment vector, and secondly returning the combination of this adjustment vector with the team grade.</p>
+<h2>Desired Behavior (DB):</h2>
+<p>(1) Individuals that perform as expected should receive the group grade; no adjustment is necessary.</p>
+<p>(2) An individual performance very different to what is expected should yield a very large adjustment. As they perform closer to expectations, the change should be increasingly less extreme. </p>
+<p>(3) Bad groups should receive stronger adjustments. Those contributing to the negative environment are punished more harshly while those fighting for a positive one are rewarded more. Consequently, good groups will receive weaker adjustments.</p>
+<p>(4) Output grades are continually distributed in [0,100]. No jumps, holes or corners likely resultant from crude if-else grade determination.</p>
+<h2>Key Assumptions (KA):</h2>
+<p>(1) Individual rating is normally distributed around 3.</p>
+<p>(2) We only have a few days to build and ship the model.</p>
+<h1>Thought Process</h1>
+<h3>Initial Trial and Error</h3>
+<p>First I tried a fixed adjustment constant which was clearly insufficient (DB 2). Then I tried R&#39;s pnorm function which is a cdf-like adjustment. However this achieved the opposite effect to DB 2: differences in grades closer to 3 resulted in a larger overall grade change than those on the extremes.</p>
+<p>I wanted a transformation with a steeper curve at the tails and flatter near the middle. A parabola came to mind however it didn&#39;t capture the negative well so I tried a cubic transformation. While it tended to work well with more typical inputs, there seemed to be issues with border cases. More specifically this was because I wasn&#39;t taking into account the 0-100 scale.</p>
+<p>A sine transformation seemed like it could deliver (DB 4) as it is repeating and thus bounded in a fixed range. However I ran into huge complexities (KA 2) and the curvature was less desirable than the a polynomial transformation.</p>
+<h2>Building the Model</h2>
+<p><strong>(i)</strong></p>
+<p>I decided that a model with a cubic and linear term was the best among my options. We could include two adjustment parameters a,b &gt; 0 resulting in a (1) positively increasing function, (2) centered around the origin (3) with a parabolic derivative achieving our desired effect of decreasing change in grade closer to expected performance (at the origin).</p>
+<p>y = ax^3 + bx    where a and b are real scalars &gt; 0</p>
+<p><img src="/grading-model/1.png" alt=""></p>
+<p>It was reaffirming to see that this approach produced what I thought to be a desirable output</p>
+<p><strong>(ii)</strong></p>
+<p>At this point in time, our adjustment uses only the individual adjustment vector. It does not take into account our input/output [0,100] team grade interval.</p>
+<figure>
+  <img src="/grading-model/2.png">
+  <figcaption>Our function doesn't yet consider team grade</figcaption>
+</figure>
+
+
+<p>We do not want a naïve cut-off of our function at one end and an &quot;out of previously considered range&quot; extension at the other (DB 4). This is what has happened in the visualization above: the purple curve is a team with a higher overall grade. On the right side, the curvature rewarding stronger individual performances is cut-off, while on the left side the punishment is extended. Since we are working with parabolic functions, this is very bad and our model would behave very unexpectedly when group grade is not the expected value.</p>
+<p>One frame-of-mind we can take is to scale our adjustment mapping in proportion to how far along our curve is shifted. Therefore on the short side, the curve is &quot;squished&quot; while on the long side it &quot;stretched&quot;.</p>
+<p>We can compose such a ratio using team grade over expected team grade. We will consider expected team grade to be 50 for the sake of symmetry, although this is a harsh assumption as we probably do not expect half of the class to fail.</p>
+<p>A simple ratio applied to our mapping would fall short: we want our ratio to be: (i) less than 1 and therefore reduce the severity of the raw adjustment values on the &quot;shorter&quot; side of 50 and (ii) greater than 1 and therefore increase the severity of the raw adjustment values on the &quot;longer&quot; side of 50. Therefore we can adopt an if-else piecewise approach for short-long side.</p>
+<p>Since we are interested in specific points on the curve, we can save computation by completing the evaluation and subsequent scaling for these points - namely each entry in the rating vector. The aforementioned if-else is determined by the relationship between the actual and expected value, which we assume to be 3 (KA 1).</p>
+<p>Let us consider the interval value for the shorter side. It&#39;s length will simply be from the grade value itself to it&#39;s closest extreme. For team grade values greater than 50 this is the value &#39;100-team_grade&#39; and for team grade values less than 50 this is the value &#39;team_grade&#39;. The longer side is the opposite of the previous assignment. 
+Thus our mapping of adjustments from our rating vector is now consistent between various input team grades.</p>
+<figure>
+  <img src="/grading-model/3.png">
+  <figcaption>Spacing is proportionally consistent among different inputs</figcaption>
+</figure>
+
+<p>Lastly, in case questionable parameters are used, we will round any values outside of [0,100] as necessary. Our current implementation reads:</p>
+<p>current.calculate.grades &lt;- function(group_grade, individual_ratings_vector, alpha=1.5, beta=10, theta=70) {</p>
+<p>  number_of_members &lt;- length(individual_ratings_vector)
+  total_rating &lt;- sum(individual_ratings_vector)
+  centered_ratings_vector &lt;- individual_ratings_vector - 3</p>
+<p>  raw_adjustment_vector &lt;- (alpha<em>centered_ratings_vector)^3+beta</em>centered_ratings_vector</p>
+<p>  bounded_adjustment_vector &lt;- ifelse(centered_ratings_vector&lt;0, raw_adjustment_vector<em>group_grade/theta, raw_adjustment_vector</em>(100-group_grade)/theta)</p>
+<p>  final_grade_vector &lt;- rep(group_grade, number_of_members) + bounded_adjustment_vector</p>
+<p>  final_grade_vector[final_grade_vector&lt;0]&lt;- 0
+  final_grade_vector[final_grade_vector&gt;100]&lt;- 100</p>
+<p>  return(final_grade_vector)
+}</p>
+<p><strong>(iii)</strong></p>
+<p>We now have a completely valid function. However in our problem specification (DB 3) we foresaw one key flaw: the possibility of the &quot;gaming of the system&quot; by non-genuine peer ratings. This problem is quite difficult to address with our current problem context, which considers only one set of work to grade rather than a series which otherwise might inform us of an individual&#39;s potentially malicious rating habits.</p>
+<p>After informing superiors that an adjusted problem specification would yield better results, we use the only information we can. We incorporate a ratio between the observed sum of the individual ratings and the expected sum of individual ratings. From KA 1 this is 3 times the number of teammates. (Integrating some sort of prior/posterior probability or reputation system into this aspect of the model among a sequence of gradings would be so much fun!).</p>
+<p>We sequence this non-genuine rating adjustment after our prior adjustments as we want to scale along the curve we have already worked out.</p>
+<figure>
+  <img src="/grading-model/4.png">
+  <figcaption>The first team is negative so has stronger scaling. The second team is a baseline. The third team is positive so have weaker scaling.</figcaption>
+</figure>
+
+
+<p>As our model satisfies all Desired Behaviors, it is time to ship our model (KA 2).</p>
+<p>calculate.grades &lt;- function(group_grade, individual_ratings_vector, alpha=1.5, beta=10, theta=70, zeta=1) {</p>
+<p>  #input validation can be put here :-]</p>
+<p>  number_of_members &lt;- length(individual_ratings_vector)
+  total_rating &lt;- sum(individual_ratings_vector)
+  centered_ratings_vector &lt;- individual_ratings_vector - 3</p>
+<p>  raw_adjustment_vector &lt;- (alpha<em>centered_ratings_vector)^3+beta</em>centered_ratings_vector</p>
+<p>  bounded_adjustment_vector &lt;- ifelse(centered_ratings_vector&lt;0, raw_adjustment_vector<em>group_grade/theta, raw_adjustment_vector</em>(100-group_grade)/theta)</p>
+<p>  secure_adjustment_vector &lt;- bounded_adjustment_vector * (number_of_members * 3 / total_rating) * 1/zeta
+  #zeta&gt;1 probably needed to reduce adjustment severity</p>
+<p>  final_grade_vector &lt;- rep(group_grade, number_of_members) + secure_adjustment_vector</p>
+<p>  final_grade_vector[final_grade_vector&lt;0]&lt;- 0
+  final_grade_vector[final_grade_vector&gt;100]&lt;- 100</p>
+<p>  return(final_grade_vector)
+}</p>
+<h1>Reflection</h1>
+<h3>Next Steps</h3>
+<p>Parameter adjustment is quite difficult, specifically with alpha and beta. We have included no input validation or support, but left it to the reader as an exercise (jokes!) It would be desirable to develop this for our users, especially because they might become frustrated and not utilize the potential of this function.</p>
+<p>A key idea worth exploring is to standardize some sort of units across my axes. I can imagine that we lose out on some of the cubic curvature due to the fact we naïvely use a [-2,2] domain. As we know from it&#39;s derivative, the rate of change is less steep over [-1,1] and therefore the adjustment spacings will be different. Incorporating a domain-adjustment term would allow us to capture this (such a parameter is actually distinct from simultaneously increasing a and b due to the cubic term).</p>
+<h3>Learnings</h3>
+<p>Coming back to this project after a couple months forced me to:</p>
+<ul>
+<li><p>Improve the clarity of my communication. What I thought made complete sense when I was familiar with the topic was no longer so clear.</p>
+</li>
+<li><p>Cautioned me of the potentially incongruous perspectives as you learn and deeper understand a topic. Something you explain as a feature might be an error in your judgement.</p>
+</li>
+<li><p>Made me more fully appreciate efficient code. I suspect that if someone saw just my raw code, they would miss a substantial amount of the reasoning behind it. After all, that is why I adopted this format of sharing my work.</p>
+</li>
+<li><p>Don&#39;t neglect testing. Be aware with the difficulties of comprehensive test cases when taking on zealous generalizations. Furthermore, beware of sloppy version control. I had commented out cutoff-rounding for bugfixing and then consequently removed them.</p>
+</li>
+</ul>
+<p>Thank you all for reading :) I would love to hear your perspective in the comments (which may or may not be implemented yet!). A follow-up is on my radar...</p>
+
+            </article>
+
+        </div>
+
+    </body>
+</html>
