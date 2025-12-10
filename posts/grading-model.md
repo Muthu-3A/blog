@@ -57,16 +57,16 @@ I decided that a model with a cubic and linear term was the best among my option
 
 y = ax^3 + bx    where a and b are real scalars > 0
 
-![](/grading-model/1.png)
+![](/public/grading-model/1.png)
 
-It was reaffirming to see that this approach produced what I thought to be a desirable output
+It was reaffirming to see that this approach produced what I thought to be a desirable output.
 
 **(ii)**
 
 At this point in time, our adjustment uses only the individual adjustment vector. It does not take into account our input/output [0,100] team grade interval.
 
 <figure>
-  <img src="/grading-model/2.png">
+  <img src="/public/grading-model/2.png">
   <figcaption>Our function doesn't yet consider team grade</figcaption>
 </figure>
 
@@ -85,7 +85,7 @@ Let us consider the interval value for the shorter side. It's length will simply
 Thus our mapping of adjustments from our rating vector is now consistent between various input team grades.
 
 <figure>
-  <img src="/grading-model/3.png">
+  <img src="/public/grading-model/3.png">
   <figcaption>Spacing is proportionally consistent among different inputs</figcaption>
 </figure>
 
@@ -118,7 +118,7 @@ After informing superiors that an adjusted problem specification would yield bet
 We sequence this non-genuine rating adjustment after our prior adjustments as we want to scale along the curve we have already worked out.
 
 <figure>
-  <img src="/grading-model/4.png">
+  <img src="/public/grading-model/4.png">
   <figcaption>The first team is negative so has stronger scaling. The second team is a baseline. The third team is positive so have weaker scaling.</figcaption>
 </figure>
 
