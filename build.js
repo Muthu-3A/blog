@@ -50,7 +50,7 @@ async function renderPost(post) {
 }
 
 async function build() {
-  console.log('🔨 Building static site...');
+  console.log('Building static site...');
   
   const outDir = path.join(__dirname, 'out');
   
@@ -64,7 +64,7 @@ async function build() {
   
   // Get posts
   const posts = await getPosts();
-  console.log(`📝 Found ${posts.length} posts`);
+  console.log(`Found ${posts.length} posts`);
   
   // Copy public folder
   const publicSrc = path.join(__dirname, 'public');
@@ -84,12 +84,12 @@ async function build() {
       await fs.copyFile(src, dest);
     }
   }
-  console.log('📂 Copied public assets');
+  console.log('Copied public assets');
   
   // Render index page
   const indexHtml = await renderIndex(posts);
   await fs.writeFile(path.join(outDir, 'index.html'), indexHtml);
-  console.log('✅ Generated index.html');
+  console.log('Generated index.html');
   
   // Render each post
   for (const post of posts) {
@@ -98,11 +98,8 @@ async function build() {
     
     const postHtml = await renderPost(post);
     await fs.writeFile(path.join(postDir, 'index.html'), postHtml);
-    console.log(`✅ Generated /post/${post.id}/index.html`);
+    console.log(`Generated /post/${post.id}/index.html`);
   }
-  
-  console.log('\n🎉 Build complete! Output in ./out/');
-  console.log('   Deploy the "out" folder to your static host (Vercel, Netlify, GitHub Pages, etc)');
 }
 
 async function copyDir(src, dest) {
@@ -123,6 +120,6 @@ async function copyDir(src, dest) {
 }
 
 build().catch(err => {
-  console.error('❌ Build failed:', err);
+  console.error('Build failed:', err);
   process.exit(1);
 });
